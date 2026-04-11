@@ -20,8 +20,35 @@ INSTRUCOES = {
 
     #Intrucoes Tipo I
     'lh':   {'tipo': 'I', 'funct3': '001', 'opcode': '0000011'},
-    'addi': {'tipo': 'I', 'funct3': '111', 'opcode': '0010011'}
+    'addi': {'tipo': 'I', 'funct3': '000', 'opcode': '0010011'}
 }
+def converter_numerobinario(numero):
+    numero = int(numero)
+    if numero < -2048 or numero > 2047:
+        print("numero invalido")
+        return 0 
+    print("tudo tranquilo")
+    binario = ""
+    if(numero < 0):
+        numero = (1 << 12) + numero
+        binario=format(numero,'012b')
+        return binario
+
+
+
+    while(numero > 0 ):
+         r = numero % 2
+         print(" o valor e  ",r)
+
+         binario = str(r) + binario
+         print(" o valor do binario e   ",binario)
+         numero = numero // 2
+         print(" o valor do numero e ",numero)
+    while len(binario) < 12:
+        binario="0" + binario
+
+    return str(binario) 
+    
      
 # Retorna o valor binario do registrador procurado
 def RegistradorConversor(reg):
@@ -41,8 +68,10 @@ def RegistradorMontador(instrucao, rd, rs1, rs2):
 
         case 'I':
             print("Nada ainda")
-            # (Coloca aqui o conversor do imediato para Binario recebendo rs2) = n_imediato -> ele sendo de tamanho 12 bits
-            # instrucaoFinal = { n_imediato + RegistradorConversor(rs1) + dados['funct3'] + RegistradorConversor(rd) + dados['opcode'] }
+            n_imediato = converter_numerobinario(rs2) 
+            instrucaoFinal={ n_imediato + RegistradorConversor(rs1) + dados['funct3'] + RegistradorConversor(rd)+
+                            dados['opcode']}
+            print(" o valor do funct 3 ",dados['funct3'])
            
         case _:
             raise ValueError("Instrução não suportada")
