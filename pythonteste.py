@@ -1,5 +1,5 @@
-def registradorconversor(x2):
-    testando = {
+# Dicionario para os Registradores
+REGISTRADORES = {
             'x0': '00000', 'x1': '00001', 'x2': '00010', 'x3': '00011',
             'x4': '00100', 'x5': '00101', 'x6': '00110', 'x7': '00111',
             'x8': '01000', 'x9': '01001', 'x10': '01010', 'x11': '01011',
@@ -8,104 +8,80 @@ def registradorconversor(x2):
             'x20': '10100', 'x21': '10101', 'x22': '10110', 'x23': '10111',
             'x24': '11000', 'x25': '11001', 'x26': '11010', 'x27': '11011',
             'x28': '11100', 'x29': '11101', 'x30': '11110', 'x31': '11111'
-            }
-    return testando[x2]
+}
 
-    
+# Dicionario
+INSTRUCOES = {
+
+    #Intrucoes Tipo R
+    'add': {'tipo': 'R', 'funct7': '0000000', 'funct3': '000', 'opcode': '0110011'},
+    'or':  {'tipo': 'R', 'funct7': '0000000', 'funct3': '110', 'opcode': '0110011'},
+    'sll': {'tipo': 'R', 'funct7': '0000000', 'funct3': '001', 'opcode': '0110011'},
+
+    #Intrucoes Tipo I
+    'lh':   {'tipo': 'I', 'funct3': '001', 'opcode': '0000011'},
+    'addi': {'tipo': 'I', 'funct3': '111', 'opcode': '0010011'}
+}
      
-     
-     
-     #funct7 | rs2 | rs1 | funct3 | rd | opcode
-    #  0       1     2      3     4       5
-def Registradormontador(instrucao,rd,rs1,rs2):
-     if(instrucao == 'add'):
-         lista_completa[5] = '0110011'
-         lista_completa[3] = '000'
-         lista_completa[0] = '0000000'
-         lista_completa[4] = registradorconversor(rd)
-         lista_completa[2] = registradorconversor(rs1)
-         lista_completa[1] = registradorconversor(rs2)
-     if(instrucao == 'or'):
-         lista_completa[5] = '0110011'
-         lista_completa[3] = '000'
-         lista_completa[0] = '0000000'
-         lista_completa[4] = registradorconversor(rd)
-         lista_completa[2] = registradorconversor(rs1)
-         lista_completa[1] = registradorconversor(rs2)
-     if(instrucao == 'sll'):
-         lista_completa[5] = '0110011'
-         lista_completa[3] = '000'
-         lista_completa[0] = '0000000'
-         lista_completa[4] = registradorconversor(rd)
-         lista_completa[2] = registradorconversor(rs1)
-         lista_completa[1] = registradorconversor(rs2)
-         
-     
-         
-    
-     
+# Retorna o valor binario do registrador procurado
+def RegistradorConversor(reg):
+    if reg not in REGISTRADORES:
+        raise ValueError(f"Registrador inválido: {reg}")
+    return REGISTRADORES[reg]
+
+
+# Recebe as variaveis da instrução e as retorna em binario em uma unica instrução de 32 bits
+def RegistradorMontador(instrucao, rd, rs1, rs2):
+    dados = INSTRUCOES.get(instrucao)
+
+    match dados['tipo']:
+        case 'R':
+            instrucaoFinal = { dados['funct7'] + RegistradorConversor(rs2) + RegistradorConversor(rs1) + 
+                                dados['funct3'] + RegistradorConversor(rd) + dados['opcode'] }
+
+        case 'I':
+            print("Nada ainda")
+            # (Coloca aqui o conversor do imediato para Binario recebendo rs2) = n_imediato -> ele sendo de tamanho 12 bits
+            # instrucaoFinal = { n_imediato + RegistradorConversor(rs1) + dados['funct3'] + RegistradorConversor(rd) + dados['opcode'] }
+           
+        case _:
+            raise ValueError("Instrução não suportada")
         
-      
+    if not dados:
+        raise ValueError("Instrução não suportada")
 
 
-     numeroconvertido = lista_completa[0] + lista_completa[1] + lista_completa[2] + lista_completa[3] + lista_completa[4] + lista_completa[5]
-     return numeroconvertido
-
-
-#adicionando de forma fake
-
-with open('asb.txt','r') as archive:
-    conteudo=archive.read()
-    print(conteudo)
-
-
-with open('asb.txt','r') as arquivo:
-    conteudo1=arquivo.read()
-    conteudo1=conteudo1.replace(',', ' ')
-    print(conteudo1)
-
-
- 
-i=0
-with open('asb.txt','r') as arquivo2:
-    for linha in arquivo2:
-        i=i+1
-        print(i)
-        linha=linha.strip()
-        linha = linha.replace(',',' ')
-        linha=linha.replace(' ','')
-        print(linha)
-   
-   # strip remove espaços
-   #replace troca um trecho por outro
-   #split divide a string em partes
-
-
-lista_completa = [""] * 6  #criar lista vazia com 6 posições
+    #Restorna o numero agora convertido
+    return (
+        instrucaoFinal
+    )
 
 with open('asb.txt','r') as arquivo3:
     for linha in arquivo3:
-        partes=linha.strip()
-        print("1 passo")
-        print(partes)
-        print(" 2 passo \n")
-        partes=partes.replace(',',' ')
-        print(partes)
-        print(" 3 passo \n")
-        partes= partes.split()
+        partes=linha.strip() #Remove os espaços vazios
+
+        partes=partes.replace(',',' ') #Remove as virgulas
+
+        partes= partes.split() #Separa a string em diferentes variaveis (func, rd, rs1, rs2)
+        
         print(partes)
 
-        instruction = partes[0] #add
-        instruction1 = partes[1] #variavel rd registrador que armazena valor
-        instruction2 = partes[2] #  variavel rs1
-        instruction3 = partes[3] #variavel rs2
-        print("DEBUG partes:", partes)
-        print("DEBUG rd:", instruction1)
-        print("DEBUG rs1:", instruction2)
-        print("DEBUG rs2:", instruction3)
+        instruction_func = partes[0] # funcao
+        instruction_rd = partes[1]   # variavel rd
+        instruction_rs1 = partes[2]  # variavel rs1
+        instruction_rs2 = partes[3]  # variavel rs2 ou imediato
 
-        resultadobinario= Registradormontador(instruction,instruction1,instruction2,instruction3)
-        print(" a instrucao convertida para binario e ",resultadobinario)
+        print("\n\n")
+
+        print("DEBUG partes:", partes, "\n")
+
+        print("DEBUG function:", instruction_func)
+        print("DEBUG rd:", instruction_rd)
+        print("DEBUG rs1:", instruction_rs1)
+        print("DEBUG rs2:", instruction_rs2)
+
+        resultadobinario= RegistradorMontador(instruction_func, instruction_rd, instruction_rs1, instruction_rs2)
+        print("A instrucao convertida para binario e ",resultadobinario)
     
 teste = {'add': '0000000'}
 
