@@ -13,14 +13,20 @@ REGISTRADORES = {
 # Dicionario para as Instrucoes
 INSTRUCOES = {
 
-    #Intrucoes Tipo R
+    # Intrucoes Tipo R
     'add': {'tipo': 'R', 'funct7': '0000000', 'funct3': '000', 'opcode': '0110011'},
     'or':  {'tipo': 'R', 'funct7': '0000000', 'funct3': '110', 'opcode': '0110011'},
     'sll': {'tipo': 'R', 'funct7': '0000000', 'funct3': '001', 'opcode': '0110011'},
 
-    #Intrucoes Tipo I
+    # Intrucoes Tipo I
     'lh':   {'tipo': 'I', 'funct3': '001', 'opcode': '0000011'},
-    'addi': {'tipo': 'I', 'funct3': '000', 'opcode': '0010011'}
+    'andi': {'tipo': 'I', 'funct3': '111', 'opcode': '0010011'},
+
+    # Intrucoes Tipo S
+    'sh': {'tipo': 'S', 'funct3': '001', 'opcode': '0100011'},
+
+    # Intrucoes Tipo SB
+    'bne': {'tipo': 'SB', 'funct3': '001', 'opcode': '1100011'}
 }
 
 
@@ -32,19 +38,49 @@ def RegistradorConversor(reg):
 
 
 # Recebe as variaveis da instrução e as retorna em binario em uma unica instrução de 32 bits
-def RegistradorMontador(instrucao, rd, rs1, rs2):
+def RegistradorMontador(instrucao, rd, rs1, rs2, imediato):
     dados = INSTRUCOES.get(instrucao)
 
     match dados['tipo']:
         case 'R':
-            instrucaoFinal = { dados['funct7'] + RegistradorConversor(rs2) + RegistradorConversor(rs1) + 
-                                dados['funct3'] + RegistradorConversor(rd) + dados['opcode'] }
+            instrucaoFinal = (
+                dados['funct7'] + 
+                RegistradorConversor(rs2) + 
+                RegistradorConversor(rs1) + 
+                dados['funct3'] + 
+                RegistradorConversor(rd) + 
+                dados['opcode']
+            )
 
         case 'I':
-            n_imediato = converter_numerobinario(rs2) 
-            instrucaoFinal = { n_imediato + RegistradorConversor(rs1) + dados['funct3'] + RegistradorConversor(rd)+
-                                dados['opcode']}
+            n_imediato = converter_numerobinario(imediato) 
+
+            instrucaoFinal = (
+                n_imediato + 
+                RegistradorConversor(rs1) + 
+                dados['funct3'] + 
+                RegistradorConversor(rd)+
+                dados['opcode']
+            )
            
+        case 'S':
+            n_imediato = converter_numerobinario(imediato)
+
+            imediato_11_5 = n_imediato[:7]
+            imediato_4_0 = n_imediato[7:]
+
+            instrucaoFinal = (
+                imediato_11_5 +
+                RegistradorConversor(rs2) +
+                RegistradorConversor(rs1) +
+                dados['funct3'] +
+                imediato_4_0 +
+                dados['opcode']
+            )
+
+        case 'SB':
+            print("Ainda não")
+
         case _:
             raise ValueError("Instrução não suportada")
         
@@ -86,25 +122,72 @@ def converter_numerobinario(numero):
 # Abre  e le o arquivo de instrucoes
 with open('asb.txt','r') as arquivo:
     for linha in arquivo:
-        partes=linha.strip() #Remove os espaços vazios
+        partes = linha.strip()
+        partes = partes.replace(',', ' ')
+        partes = partes.split()
 
-        partes=partes.replace(',',' ') #Remove as virgulas
+        instruction_func = partes[0]
 
-        partes= partes.split() #Separa a string em diferentes variaveis (func, rd, rs1, rs2)
+        # Inicialização
+        instruction_rd = '0'
+        instruction_rs1 = '0'
+        instruction_rs2 = '0'
+        instruction_imed = '0'
 
-        instruction_func = partes[0] # funcao
-        instruction_rd = partes[1]   # variavel rd
-        instruction_rs1 = partes[2]  # variavel rs1
-        instruction_rs2 = partes[3]  # variavel rs2 ou imediato
+        # Tipo R: add, or, sll
+        if instruction_func in ['add', 'or', 'sll']:
+            instruction_rd  = partes[1]
+            instruction_rs1 = partes[2]
+            instruction_rs2 = partes[3]
 
-        print("\n\n")
+        # Tipo I: andi
+        elif instruction_func == 'andi':
+            instruction_rd  = partes[1]
+            instruction_rs1 = partes[2]
+            instruction_imed = partes[3]
 
-        print("DEBUG partes:", partes, "\n")
+        # Tipo I (load): lh
+        elif instruction_func == 'lh':
+            instruction_rd = partes[1]
 
+            offset, reg = partes[2].split('(')
+            reg = reg.replace(')', '')
+
+            instruction_rs1 = reg
+            instruction_imed = offset
+
+        # Tipo S: sh
+        elif instruction_func == 'sh':
+            instruction_rs2 = partes[1]  # valor a armazenar
+
+            offset, reg = partes[2].split('(')
+            reg = reg.replace(')', '')
+
+            instruction_rs1 = reg
+            instruction_imed = offset
+
+        # Tipo SB: bne
+        elif instruction_func == 'bne':
+            print("Ainda Nada")
+
+        else:
+            print("Instrução não suportada:", instruction_func)
+            continue
+
+        # DEBUG
+        print("\nDEBUG partes:", partes)
         print("DEBUG function:", instruction_func)
         print("DEBUG rd:", instruction_rd)
         print("DEBUG rs1:", instruction_rs1)
         print("DEBUG rs2:", instruction_rs2)
+        print("DEBUG imediato:", instruction_imed)
 
-        resultadobinario= RegistradorMontador(instruction_func, instruction_rd, instruction_rs1, instruction_rs2)
-        print("A instrucao convertida para binario e ",resultadobinario)
+        resultadobinario = RegistradorMontador(
+            instruction_func,
+            instruction_rd,
+            instruction_rs1,
+            instruction_rs2,
+            instruction_imed
+        )
+
+        print("A instrucao convertida para binario e", resultadobinario)
