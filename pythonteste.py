@@ -117,6 +117,28 @@ def converter_numerobinario(numero):
         binario="0" + binario
 
     return str(binario) 
+            
+def calculo_offset(nome_arquivo):
+    rotulo = {}
+    posicao = 0 # em cada linha vai ser somado 4bytes e a  variavel vai ajudar no calculo de deslocamento
+    with open(nome_arquivo,'r') as arquivo2:
+        for linha in arquivo2:
+            linha=linha.strip()
+            print(linha)
+            if ':' in linha:     #procura se tem : no arquivo
+                partes=linha.split(':')
+                print(partes)
+                nome_rotulo = partes[0].strip()
+                print(nome_rotulo)
+                rotulo[nome_rotulo] = posicao #adiciona um item ao dicionario
+                resto = partes[1].strip()
+                if resto == '':
+                    continue  #se a linha  so tiver : o programa vai incrementar
+                else:
+                    posicao=posicao + 4   
+          else:
+            posição = posição + 4
+  return rotulo      
 
 
 # Abre  e le o arquivo de instrucoes
