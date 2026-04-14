@@ -139,6 +139,30 @@ def calculo_offset(nome_arquivo):
           else:
             posição = posição + 4
   return rotulo      
+def segunda_passagem(nome_arquivo,rotulo):
+    posicao1 = 0 #variavel para ajudar no calculo do offset
+    with open(nome_arquivo,'r') as arquivo3:
+        for linha4 in arquivo3:
+
+            linha4 = linha4.strip() #strip usado para remover espaço em branco
+            if linha4 == '': #ignora linha vazia
+                continue 
+            if ':' in linha4:
+                partes_da_linha = linha4.split(':',1) #divide a linha em 2 partes
+                linha4 = partes_da_linha[1].strip()
+                if linha4 == '':
+                    continue
+            linha4 = linha4.replace(',',' ')
+            partes = linha4.split()
+            
+            instruction_func = partes[0]
+            if instruction_func == 'bne':
+                rs1 = parte[1]
+                rs2 = parte[2]
+                nome_rotulo = parte[3]
+                endereco_rotulo = rotulo[nome_rotulo]
+                offset = endereco_rotulo - posicao1
+            posicao1 = posicao1 + 4 
 
 
 # Abre  e le o arquivo de instrucoes
