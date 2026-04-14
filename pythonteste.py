@@ -139,30 +139,90 @@ def calculo_offset(nome_arquivo):
           else:
             posição = posição + 4
   return rotulo      
-def segunda_passagem(nome_arquivo,rotulo):
-    posicao1 = 0 #variavel para ajudar no calculo do offset
-    with open(nome_arquivo,'r') as arquivo3:
-        for linha4 in arquivo3:
+def terceira_passagem()
+    with open('asb.txt','r') as arquivo:
+    posicao1 = 0
+    for linha in arquivo:
+        linha = linha.strip()
+        if ':' in linha:
+            partes_da_linha = linha.split(':',1)
+            linha = partes_da_linha[1].strip
+            if linha == '':
+                continue
+        linha = linha.replace(',',' ')
+        partes = linha.split()
+        instruction_func = partes[0]
+        # Inicialização
+        instruction_rd = '0'
+        instruction_rs1 = '0'
+        instruction_rs2 = '0'
+        instruction_imed = '0'
 
-            linha4 = linha4.strip() #strip usado para remover espaço em branco
-            if linha4 == '': #ignora linha vazia
-                continue 
-            if ':' in linha4:
-                partes_da_linha = linha4.split(':',1) #divide a linha em 2 partes
-                linha4 = partes_da_linha[1].strip()
-                if linha4 == '':
-                    continue
-            linha4 = linha4.replace(',',' ')
-            partes = linha4.split()
-            
-            instruction_func = partes[0]
-            if instruction_func == 'bne':
+        # Tipo R: add, or, sll
+        if instruction_func in ['add', 'or', 'sll']:
+            instruction_rd  = partes[1]
+            instruction_rs1 = partes[2]
+            instruction_rs2 = partes[3]
+
+        # Tipo I: andi
+        elif instruction_func == 'andi':
+            instruction_rd  = partes[1]
+            instruction_rs1 = partes[2]
+            instruction_imed = partes[3]
+
+        # Tipo I (load): lh
+        elif instruction_func == 'lh':
+            instruction_rd = partes[1]
+
+            offset, reg = partes[2].split('(')
+            reg = reg.replace(')', '')
+
+            instruction_rs1 = reg
+            instruction_imed = offset
+
+        # Tipo S: sh
+        elif instruction_func == 'sh':
+            instruction_rs2 = partes[1]  # valor a armazenar
+
+            offset, reg = partes[2].split('(')
+            reg = reg.replace(')', '')
+
+            instruction_rs1 = reg
+            instruction_imed = offset
+
+        # Tipo SB: bne
+        elif instruction_func == 'bne':
                 rs1 = parte[1]
                 rs2 = parte[2]
                 nome_rotulo = parte[3]
                 endereco_rotulo = rotulo[nome_rotulo]
                 offset = endereco_rotulo - posicao1
-            posicao1 = posicao1 + 4 
+                insctruction_imed = offset
+                posicao1 = posicao1 + 4 
+        else:
+            print("Instrução não suportada:", instruction_func)
+            continue
+
+        # DEBUG
+        print("\nDEBUG partes:", partes)
+        print("DEBUG function:", instruction_func)
+        print("DEBUG rd:", instruction_rd)
+        print("DEBUG rs1:", instruction_rs1)
+        print("DEBUG rs2:", instruction_rs2)
+        print("DEBUG imediato:", instruction_imed)
+
+        resultadobinario = RegistradorMontador(
+            instruction_func,
+            instruction_rd,
+            instruction_rs1,
+            instruction_rs2,
+            instruction_imed
+        )
+
+        print("A instrucao convertida para binario e", resultadobinario)
+        posicao = posicao + 4
+
+ 
 
 
 # Abre  e le o arquivo de instrucoes
