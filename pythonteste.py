@@ -35,6 +35,14 @@ def RegistradorConversor(reg):
     if reg not in REGISTRADORES:
         raise ValueError(f"Registrador inválido: {reg}")
     return REGISTRADORES[reg]
+def converter_imediato_branch(offset):
+    offset = int(offset)
+
+
+    if offset < -4096 or offset > 4094:
+        raise ValueError("Offset fora do alcance do branch")
+     
+    return format(offset , '013b')
 
 
 # Recebe as variaveis da instrução e as retorna em binario em uma unica instrução de 32 bits
@@ -79,7 +87,21 @@ def RegistradorMontador(instrucao, rd, rs1, rs2, imediato):
             )
 
         case 'SB':
-            print("Ainda não")
+          n_imediato = converter_imediato_branch(imediato)
+            imediato12 = n_imediato[0]     # numero imediato[0]  = bit 12
+            imediato11 = n_imediato[1]
+            imediato10_5 = n_imediato[2:8] # vai do bit 10 do imediato até o 5
+            imediato4_1 = n_imediato[8:12]
+            instrucaoFinal = (
+                imediato12 +
+                imediato10_5 +
+                RegistradorConversor(rs2) +
+                RegistradorConversor(rs1) +
+                dados['funct3'] +
+                imediato4_1 +
+                imediato11 +
+                dados['opcode']
+            )
 
         case _:
             raise ValueError("Instrução não suportada")
@@ -120,109 +142,38 @@ def converter_numerobinario(numero):
             
 def calculo_offset(nome_arquivo):
     rotulo = {}
-    posicao = 0 # em cada linha vai ser somado 4bytes e a  variavel vai ajudar no calculo de deslocamento
-    with open(nome_arquivo,'r') as arquivo2:
+    posicao = 0  # cada instrução ocupa 4 bytes
+
+    with open(nome_arquivo, 'r') as arquivo2:
         for linha in arquivo2:
-            linha=linha.strip()
+            linha = linha.strip()
             print(linha)
-            if ':' in linha:     #procura se tem : no arquivo
-                partes=linha.split(':')
-                print(partes)
-                nome_rotulo = partes[0].strip()
-                print(nome_rotulo)
-                rotulo[nome_rotulo] = posicao #adiciona um item ao dicionario
-                resto = partes[1].strip()
-                if resto == '':
-                    continue  #se a linha  so tiver : o programa vai incrementar
-                else:
-                    posicao=posicao + 4   
-          else:
-            posição = posição + 4
-  return rotulo      
-def terceira_passagem()
-    with open('asb.txt','r') as arquivo:
-    posicao1 = 0
-    for linha in arquivo:
-        linha = linha.strip()
-        if ':' in linha:
-            partes_da_linha = linha.split(':',1)
-            linha = partes_da_linha[1].strip
+
             if linha == '':
                 continue
-        linha = linha.replace(',',' ')
-        partes = linha.split()
-        instruction_func = partes[0]
-        # Inicialização
-        instruction_rd = '0'
-        instruction_rs1 = '0'
-        instruction_rs2 = '0'
-        instruction_imed = '0'
 
-        # Tipo R: add, or, sll
-        if instruction_func in ['add', 'or', 'sll']:
-            instruction_rd  = partes[1]
-            instruction_rs1 = partes[2]
-            instruction_rs2 = partes[3]
+            if ':' in linha:   # procura se tem : no arquivo
+                partes = linha.split(':', 1)
+                print(partes)
 
-        # Tipo I: andi
-        elif instruction_func == 'andi':
-            instruction_rd  = partes[1]
-            instruction_rs1 = partes[2]
-            instruction_imed = partes[3]
+                nome_rotulo = partes[0].strip()
+                print(nome_rotulo)
 
-        # Tipo I (load): lh
-        elif instruction_func == 'lh':
-            instruction_rd = partes[1]
+                rotulo[nome_rotulo] = posicao  # adiciona ao dicionário
 
-            offset, reg = partes[2].split('(')
-            reg = reg.replace(')', '')
+                resto = partes[1].strip()
 
-            instruction_rs1 = reg
-            instruction_imed = offset
+                if resto == '':
+                    continue   # linha só com rótulo, não incrementa posicao
+                else:
+                    posicao = posicao + 4
 
-        # Tipo S: sh
-        elif instruction_func == 'sh':
-            instruction_rs2 = partes[1]  # valor a armazenar
+            else:
+                posicao = posicao + 4
 
-            offset, reg = partes[2].split('(')
-            reg = reg.replace(')', '')
+    return rotulo 
+            
 
-            instruction_rs1 = reg
-            instruction_imed = offset
-
-        # Tipo SB: bne
-        elif instruction_func == 'bne':
-                rs1 = parte[1]
-                rs2 = parte[2]
-                nome_rotulo = parte[3]
-                endereco_rotulo = rotulo[nome_rotulo]
-                offset = endereco_rotulo - posicao1
-                insctruction_imed = offset
-                posicao1 = posicao1 + 4 
-        else:
-            print("Instrução não suportada:", instruction_func)
-            continue
-
-        # DEBUG
-        print("\nDEBUG partes:", partes)
-        print("DEBUG function:", instruction_func)
-        print("DEBUG rd:", instruction_rd)
-        print("DEBUG rs1:", instruction_rs1)
-        print("DEBUG rs2:", instruction_rs2)
-        print("DEBUG imediato:", instruction_imed)
-
-        resultadobinario = RegistradorMontador(
-            instruction_func,
-            instruction_rd,
-            instruction_rs1,
-            instruction_rs2,
-            instruction_imed
-        )
-
-        print("A instrucao convertida para binario e", resultadobinario)
-        posicao = posicao + 4
-
- 
 
 
 # Abre  e le o arquivo de instrucoes
@@ -297,3 +248,94 @@ with open('asb.txt','r') as arquivo:
         )
 
         print("A instrucao convertida para binario e", resultadobinario)
+
+
+def terceira_passagem(teste):
+    rotulo = calculo_offset('asb.txt')
+    with open('testealeatorio2.txt','r') as arquivo4:
+        posicao1 = 0
+        for linha in arquivo4:
+            linha = linha.strip()
+            
+            if linha == '':
+                continue
+            if ':' in linha:
+                partes_da_linha = linha.split(':',1)
+                linha = partes_da_linha[1]
+                if linha == '':
+                    continue
+            linha = linha.replace(',',' ')
+            partes = linha.split()
+            instruction_func = partes[0]
+
+            # Inicialização
+            instruction_rd = '0'
+            instruction_rs1 = '0'
+            instruction_rs2 = '0'
+            instruction_imed = '0'
+
+            # Tipo R: add, or, sll
+            if instruction_func in ['add', 'or', 'sll']:
+                instruction_rd  = partes[1]
+                instruction_rs1 = partes[2]
+                instruction_rs2 = partes[3]
+
+            # Tipo I: andi
+            elif instruction_func == 'andi':
+                instruction_rd  = partes[1]
+                instruction_rs1 = partes[2]
+                instruction_imed = partes[3]
+
+            # Tipo I (load): lh
+            elif instruction_func == 'lh':
+                instruction_rd = partes[1]
+
+                offset, reg = partes[2].split('(')
+                reg = reg.replace(')', '')
+
+                instruction_rs1 = reg
+                instruction_imed = offset
+
+            # Tipo S: sh
+            elif instruction_func == 'sh':
+                instruction_rs2 = partes[1]
+
+                offset, reg = partes[2].split('(')
+                reg = reg.replace(')', '')
+
+                instruction_rs1 = reg
+                instruction_imed = offset
+
+            # Tipo SB: bne
+            elif instruction_func == 'bne':
+                instruction_rs1 = partes[1]
+                instruction_rs2 = partes[2]
+                nome_rotulo = partes[3]
+
+                endereco_rotulo = rotulo[nome_rotulo]
+                offset = endereco_rotulo - posicao1
+                instruction_imed = offset
+
+            else:
+                print("Instrução não suportada:", instruction_func)
+                continue
+
+            print("\nDEBUG partes:", partes)
+            print("DEBUG function:", instruction_func)
+            print("DEBUG rd:", instruction_rd)
+            print("DEBUG rs1:", instruction_rs1)
+            print("DEBUG rs2:", instruction_rs2)
+            print("DEBUG imediato:", instruction_imed)
+
+            resultadobinario = RegistradorMontador(
+                instruction_func,
+                instruction_rd,
+                instruction_rs1,
+                instruction_rs2,
+                instruction_imed
+            )
+
+            print("A instrucao convertida para binario e", resultadobinario)
+
+            posicao1 = posicao1 + 4
+
