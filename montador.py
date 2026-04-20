@@ -236,11 +236,9 @@ def main():
 
     if saida:
         with open(saida, 'w') as f:
-            for linha in resultado:
-                f.write(linha + '\n')
+            f.write('\n'.join(resultado)) # Evita linha vazia no final do arquivo
     else:
-        for linha in resultado:
-            print(linha)
+        print('\n'.join(resultado))
 
 # Comeca o Programa
 if __name__ == "__main__":
