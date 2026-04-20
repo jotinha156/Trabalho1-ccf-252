@@ -1,3 +1,7 @@
+# Codigo de:
+    # Joao Pedro De Oliveira Rodrigues - 4425
+    # Pablo da Silva Santana - 5900
+
 import sys
 
 # REGISTRADORES DICIONARIO
@@ -243,13 +247,3 @@ def main():
 # Comeca o Programa
 if __name__ == "__main__":
     main()
-
-# Para roda o programa, tenha a pasta do programa aberta no terminal e use:
-    # py montador.py entrada.asm
-    #       OU
-    # py montador.py entrada.asm -o saida.txt
-
-
-# Codigo de:
-    # Joao Pedro De Oliveira Rodrigues - 4425
-    # Pablo da Silva Santana - 5900
